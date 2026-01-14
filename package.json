@@ -1,0 +1,20 @@
+{
+  "name": "bot-kyoto",
+  "version": "1.0.0",
+  "description": "Bot Discord de modération avec système de sanctions",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "moderation"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^17.2.3"
+  }
+}
