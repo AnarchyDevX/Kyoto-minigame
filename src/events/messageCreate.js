@@ -1,5 +1,5 @@
 const config = require('../config');
-const { PermissionFlagsBits } = require('discord.js');
+const { PermissionFlagsBits, ChannelType } = require('discord.js');
 
 module.exports = {
     name: 'messageCreate',
@@ -36,7 +36,7 @@ module.exports = {
 async function handleSmashOrPassChannel(message) {
     try {
         // check bot perm
-        if (!message.channel.permissionsFor(message.guild.members.me).has(['MANAGE_MESSAGES', 'ADD_REACTIONS', 'CREATE_PUBLIC_THREADS', 'MANAGE_THREADS'])) {
+        if (!message.channel.permissionsFor(message.guild.members.me).has(['MANAGE_MESSAGES', 'ADD_REACTIONS', 'CREATE_PUBLIC_THREADS', 'MANAGE_THREADS', 'SEND_MESSAGES_IN_THREADS'])) {
             return;
         }
 
@@ -67,6 +67,7 @@ async function handleSmashOrPassChannel(message) {
             const thread = await message.startThread({
                 name: `Discussion - ${message.author.username}`,
                 autoArchiveDuration: 1440,
+                type: ChannelType.PublicThread,
             });
             
             // Ensure everyone can send messages in the thread
