@@ -30,6 +30,7 @@ Thumbs.db
 # Bot data
 src/data/whitelist.json
 src/data/semiwhitelist.json
+src/data/adminrole.json
 
 # Build files
 dist/

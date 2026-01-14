@@ -8,14 +8,15 @@ module.exports = {
     async execute(message, args) {
         const { getRandomNoPermission, getRandomWrongChannel, getRandomError, getRandomInvalidUsage, getRandomUserNotFound, getRandomAlreadyWhitelisted } = require('../utils/messages');
         
-        const { hasFullPermissions } = require('../utils/whitelist');
+        const { hasFullPermissions, hasAdminRole } = require('../utils/whitelist');
         
         // check full permissions first
         const hasFullPerms = hasFullPermissions(message.author.id);
         
         // check perm user
         const hasPermission = message.member.permissions.has([PermissionFlagsBits.ModerateMembers, PermissionFlagsBits.Administrator]);
-        if (!hasPermission && !hasFullPerms) {
+        const hasAdmin = hasAdminRole(message.member);
+        if (!hasPermission && !hasFullPerms && !hasAdmin) {
             return message.reply(getRandomNoPermission('wladd', false));
         }
 

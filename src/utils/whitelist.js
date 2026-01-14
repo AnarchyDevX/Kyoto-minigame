@@ -4,6 +4,7 @@ const path = require('path');
 
 const whitelistPath = path.join(__dirname, '..', 'data', 'whitelist.json');
 const semiWhitelistPath = path.join(__dirname, '..', 'data', 'semiwhitelist.json');
+const adminRolePath = path.join(__dirname, '..', 'data', 'adminrole.json');
 
 // create data dir if not exists
 const dataDir = path.join(__dirname, '..', 'data');
@@ -201,6 +202,56 @@ function hasSemiWhitelistedRole(member) {
     return memberRoles.some(roleId => semiWhitelistedRoles.includes(roleId));
 }
 
+// ========== ADMIN ROLE FUNCTIONS ==========
+
+// load admin role from file
+function loadAdminRole(guildId) {
+    if (!fs.existsSync(adminRolePath)) {
+        return null;
+    }
+    try {
+        const data = fs.readFileSync(adminRolePath, 'utf8');
+        const adminRoles = JSON.parse(data);
+        return adminRoles[guildId] || null;
+    } catch (error) {
+        console.error('Erreur lors du chargement du rôle admin:', error);
+        return null;
+    }
+}
+
+// save admin role to file
+function saveAdminRole(guildId, roleId) {
+    let allAdminRoles = {};
+    if (fs.existsSync(adminRolePath)) {
+        try {
+            const data = fs.readFileSync(adminRolePath, 'utf8');
+            allAdminRoles = JSON.parse(data);
+        } catch (error) {
+            console.error('Erreur lors de la lecture du rôle admin:', error);
+        }
+    }
+    allAdminRoles[guildId] = roleId;
+    fs.writeFileSync(adminRolePath, JSON.stringify(allAdminRoles, null, 2), 'utf8');
+}
+
+// check if member has admin role or role above it
+function hasAdminRole(member) {
+    const adminRoleId = loadAdminRole(member.guild.id);
+    if (!adminRoleId) return false;
+    
+    const adminRole = member.guild.roles.cache.get(adminRoleId);
+    if (!adminRole) return false;
+    
+    // Check if member has the exact role
+    if (member.roles.cache.has(adminRoleId)) {
+        return true;
+    }
+    
+    // Check if member has any role with higher position
+    const memberHighestRole = member.roles.highest;
+    return memberHighestRole.position > adminRole.position;
+}
+
 module.exports = {
     addRole,
     removeRole,
@@ -216,4 +267,8 @@ module.exports = {
     removeSemiWhitelistRole,
     isRoleSemiWhitelisted,
     hasSemiWhitelistedRole,
+    // Admin role exports
+    loadAdminRole,
+    saveAdminRole,
+    hasAdminRole,
 };
