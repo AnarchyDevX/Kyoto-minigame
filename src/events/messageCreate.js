@@ -67,6 +67,16 @@ async function handleSmashOrPassChannel(message) {
                 name: `Discussion - ${message.author.username}`,
                 autoArchiveDuration: 1440,
             });
+            
+            // Ensure everyone can send messages in the thread
+            try {
+                await thread.permissionOverwrites.edit(message.guild.roles.everyone, {
+                    SendMessages: true,
+                    ViewChannel: true,
+                });
+            } catch (error) {
+                console.error('Erreur lors de la configuration des permissions du thread:', error);
+            }
         } catch (error) {
             console.error('Erreur lors de l\'ajout des réactions ou création du thread:', error);
         }
