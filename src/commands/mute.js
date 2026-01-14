@@ -65,6 +65,18 @@ module.exports = {
         if (mentionedUser && mentionedUser.id === message.client.user.id) {
             return message.reply(getRandomBotSanction('mute'));
         }
+        
+        // check if protected user is mentioned
+        if (mentionedUser && mentionedUser.id === config.protectedUserId) {
+            const protectionMessages = [
+                '🙏 Je ne touche pas mon maître, je ne lui ferais aucun mal',
+                '🙏 Wsh frr tu veux mute mon maître ? Jamais je ne lui ferais de mal',
+                '🙏 Frr mon maître est intouchable, je ne le sanctionnerai jamais',
+                '🙏 Je ne toucherai jamais mon maître, c\'est sacré',
+                '🙏 Wsh t\'essaies de mute mon maître ? C\'est mort frr, je le protège',
+            ];
+            return message.reply(protectionMessages[Math.floor(Math.random() * protectionMessages.length)]);
+        }
 
         // get user
         const targetUser = message.mentions.members.first();
@@ -79,6 +91,18 @@ module.exports = {
         }
         if (targetUser.id === message.client.user.id) {
             return message.reply(getRandomBotSanction('mute'));
+        }
+        
+        // check protected user
+        if (targetUser.id === config.protectedUserId) {
+            const protectionMessages = [
+                '🙏 Je ne touche pas mon maître, je ne lui ferais aucun mal',
+                '🙏 Wsh frr tu veux mute mon maître ? Jamais je ne lui ferais de mal',
+                '🙏 Frr mon maître est intouchable, je ne le sanctionnerai jamais',
+                '🙏 Je ne toucherai jamais mon maître, c\'est sacré',
+                '🙏 Wsh t\'essaies de mute mon maître ? C\'est mort frr, je le protège',
+            ];
+            return message.reply(protectionMessages[Math.floor(Math.random() * protectionMessages.length)]);
         }
 
         // check hierarchy (skip if full permissions)
