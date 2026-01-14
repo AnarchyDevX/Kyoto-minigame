@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const whitelistPath = path.join(__dirname, '..', 'data', 'whitelist.json');
+const semiWhitelistPath = path.join(__dirname, '..', 'data', 'semiwhitelist.json');
 
 // create data dir if not exists
 const dataDir = path.join(__dirname, '..', 'data');
@@ -132,6 +133,74 @@ function isHighRank(member) {
     return memberHighestRole.position > highRankRole.position;
 }
 
+// ========== SEMI-WHITELIST FUNCTIONS ==========
+
+// load semi-whitelist from file
+function loadSemiWhitelist(guildId) {
+    if (!fs.existsSync(semiWhitelistPath)) {
+        return [];
+    }
+    try {
+        const data = fs.readFileSync(semiWhitelistPath, 'utf8');
+        const semiWhitelist = JSON.parse(data);
+        return semiWhitelist[guildId] || [];
+    } catch (error) {
+        console.error('Erreur lors du chargement de la semi-whitelist:', error);
+        return [];
+    }
+}
+
+// save semi-whitelist to file
+function saveSemiWhitelist(guildId, roles) {
+    let allSemiWhitelists = {};
+    if (fs.existsSync(semiWhitelistPath)) {
+        try {
+            const data = fs.readFileSync(semiWhitelistPath, 'utf8');
+            allSemiWhitelists = JSON.parse(data);
+        } catch (error) {
+            console.error('Erreur lors de la lecture de la semi-whitelist:', error);
+        }
+    }
+    allSemiWhitelists[guildId] = roles;
+    fs.writeFileSync(semiWhitelistPath, JSON.stringify(allSemiWhitelists, null, 2), 'utf8');
+}
+
+// add role to semi-whitelist
+function addSemiWhitelistRole(guildId, roleId) {
+    const roles = loadSemiWhitelist(guildId);
+    if (!roles.includes(roleId)) {
+        roles.push(roleId);
+        saveSemiWhitelist(guildId, roles);
+        return true;
+    }
+    return false;
+}
+
+// remove role from semi-whitelist
+function removeSemiWhitelistRole(guildId, roleId) {
+    const roles = loadSemiWhitelist(guildId);
+    const index = roles.indexOf(roleId);
+    if (index > -1) {
+        roles.splice(index, 1);
+        saveSemiWhitelist(guildId, roles);
+        return true;
+    }
+    return false;
+}
+
+// check if role is in semi-whitelist
+function isRoleSemiWhitelisted(guildId, roleId) {
+    const roles = loadSemiWhitelist(guildId);
+    return roles.includes(roleId);
+}
+
+// check if member has semi-whitelisted role (for mute only)
+function hasSemiWhitelistedRole(member) {
+    const semiWhitelistedRoles = loadSemiWhitelist(member.guild.id);
+    const memberRoles = member.roles.cache.map(role => role.id);
+    return memberRoles.some(roleId => semiWhitelistedRoles.includes(roleId));
+}
+
 module.exports = {
     addRole,
     removeRole,
@@ -141,4 +210,10 @@ module.exports = {
     loadWhitelist,
     hasFullPermissions,
     isHighRank,
+    // Semi-whitelist exports
+    loadSemiWhitelist,
+    addSemiWhitelistRole,
+    removeSemiWhitelistRole,
+    isRoleSemiWhitelisted,
+    hasSemiWhitelistedRole,
 };
