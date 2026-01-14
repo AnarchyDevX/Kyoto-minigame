@@ -70,12 +70,27 @@ async function handleSmashOrPassChannel(message) {
             
             // Ensure everyone can send messages in the thread
             try {
-                await thread.permissionOverwrites.edit(message.guild.roles.everyone, {
+                // Wait a bit for thread to be fully created
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Set permissions for @everyone to allow sending messages
+                const everyoneRole = message.guild.roles.everyone;
+                await thread.permissionOverwrites.create(everyoneRole, {
                     SendMessages: true,
                     ViewChannel: true,
+                    SendMessagesInThreads: true,
                 });
             } catch (error) {
-                console.error('Erreur lors de la configuration des permissions du thread:', error);
+                // If create fails, try edit
+                try {
+                    await thread.permissionOverwrites.edit(message.guild.roles.everyone, {
+                        SendMessages: true,
+                        ViewChannel: true,
+                        SendMessagesInThreads: true,
+                    });
+                } catch (editError) {
+                    console.error('Erreur lors de la configuration des permissions du thread:', editError);
+                }
             }
         } catch (error) {
             console.error('Erreur lors de l\'ajout des réactions ou création du thread:', error);
