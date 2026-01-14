@@ -71,22 +71,47 @@ async function handleSmashOrPassChannel(message) {
             
             // Ensure everyone can send messages in the thread
             try {
-                // Wait a bit for thread to be fully created
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Wait a bit for thread to be fully created and synced
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Fetch the thread to ensure we have the latest data
+                const fetchedThread = await thread.fetch();
                 
                 // Get the everyone role
                 const everyoneRole = message.guild.roles.everyone;
                 
-                // Use set to force permissions (removes any existing denies)
-                await thread.permissionOverwrites.set([
-                    {
-                        id: everyoneRole.id,
-                        allow: [PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessagesInThreads],
-                        deny: [],
-                    }
-                ], { reason: 'Permettre à tout le monde de parler dans le thread' });
+                // Check current permissions
+                const currentOverwrite = fetchedThread.permissionOverwrites.cache.get(everyoneRole.id);
+                
+                // Remove any existing deny for @everyone first
+                if (currentOverwrite) {
+                    await fetchedThread.permissionOverwrites.delete(everyoneRole, { reason: 'Reset permissions pour @everyone' });
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                // Create fresh permissions allowing everything
+                await fetchedThread.permissionOverwrites.create(everyoneRole, {
+                    ViewChannel: true,
+                    SendMessages: true,
+                    SendMessagesInThreads: true,
+                    ReadMessageHistory: true,
+                }, { reason: 'Permettre à tout le monde de parler dans le thread' });
+                
+                console.log(`✅ Permissions configurées pour le thread: ${fetchedThread.name}`);
             } catch (error) {
                 console.error('Erreur lors de la configuration des permissions du thread:', error);
+                // Try alternative method
+                try {
+                    const everyoneRole = message.guild.roles.everyone;
+                    await thread.permissionOverwrites.edit(everyoneRole, {
+                        ViewChannel: true,
+                        SendMessages: true,
+                        SendMessagesInThreads: true,
+                        ReadMessageHistory: true,
+                    }, { reason: 'Fallback: Permettre à tout le monde de parler' });
+                } catch (fallbackError) {
+                    console.error('Erreur lors de la méthode fallback:', fallbackError);
+                }
             }
         } catch (error) {
             console.error('Erreur lors de l\'ajout des réactions ou création du thread:', error);
