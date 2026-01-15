@@ -38,6 +38,7 @@ module.exports = {
             let opponentUser = null;
             let opponentName = '';
             let isFriend = false;
+            let challengeBet = 0;
             
             // Check if user mentioned someone to fight
             if (args.length > 0 && message.mentions.members.size > 0) {
@@ -122,6 +123,46 @@ module.exports = {
             
             // Get opponent data
             opponent = getUser(opponentId);
+            
+            // Check for pending rival challenge (both directions)
+            if (isFriend && opponentId) {
+                // Check if opponent has a challenge for user
+                const opponentData = getUser(opponentId);
+                if (opponentData.rivalries?.challenges) {
+                    const pendingChallenge = opponentData.rivalries.challenges.find(
+                        c => c.toUserId === userId && c.status === 'pending'
+                    );
+                    if (pendingChallenge) {
+                        // Verify user has enough coins
+                        if (user.coins >= pendingChallenge.coins) {
+                            challengeBet = pendingChallenge.coins;
+                            // Remove challenge as it will be accepted
+                            opponentData.rivalries.challenges = opponentData.rivalries.challenges.filter(
+                                c => !(c.toUserId === userId && c.createdAt === pendingChallenge.createdAt)
+                            );
+                            updateUser(opponentId, opponentData);
+                        }
+                    }
+                }
+                
+                // Also check if user has a challenge for opponent
+                if (challengeBet === 0 && user.rivalries?.challenges) {
+                    const userChallenge = user.rivalries.challenges.find(
+                        c => c.toUserId === opponentId && c.status === 'pending'
+                    );
+                    if (userChallenge) {
+                        // Verify opponent has enough coins
+                        if (opponent.coins >= userChallenge.coins) {
+                            challengeBet = userChallenge.coins;
+                            // Remove challenge as it will be accepted
+                            user.rivalries.challenges = user.rivalries.challenges.filter(
+                                c => !(c.toUserId === opponentId && c.createdAt === userChallenge.createdAt)
+                            );
+                            updateUser(userId, user);
+                        }
+                    }
+                }
+            }
             
             // Check if it's a fake user
             if (opponentId.startsWith('999999999999999')) {
