@@ -8,12 +8,13 @@ module.exports = {
         console.log(`✅ Bot connecté en tant que ${client.user.tag}!`);
         console.log(`📊 Servant ${client.guilds.cache.size} serveur(s)`);
         
-        // Définir le statut du bot (streaming avec bouton cliquable)
+        // Définir le statut du bot (watching)
+        // Note: Discord ne permet les boutons cliquables que pour Twitch/YouTube en mode STREAMING
+        // Pour une URL personnalisée, on utilise WATCHING qui affiche le lien dans le statut
         client.user.setPresence({
             activities: [{
-                name: 'guns.lol/0xRynal',
-                type: 1, // STREAMING
-                url: 'https://guns.lol/0xRynal'
+                name: 'https://guns.lol/0xRynal',
+                type: 3 // WATCHING
             }],
             status: 'online'
         });
