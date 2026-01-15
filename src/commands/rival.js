@@ -82,8 +82,8 @@ module.exports = {
                 const successEmbed = new EmbedBuilder()
                     .setColor(0x00FF00)
                     .setTitle('⚔️ Défi envoyé !')
-                    .setDescription(`Défi envoyé à **${target.username}** pour **${bet.toLocaleString()}💰**\n\nIl peut accepter avec \`$arene @${message.author.username}\``)
-                    .setThumbnail(target.displayAvatarURL())
+                    .setDescription(`Défi envoyé à **${target.user.username}** pour **${bet.toLocaleString()}💰**\n\nIl peut accepter avec \`$arene @${message.author.username}\``)
+                    .setThumbnail(target.user.displayAvatarURL())
                     .setFooter({ 
                         text: message.author.username,
                         iconURL: message.author.displayAvatarURL()
