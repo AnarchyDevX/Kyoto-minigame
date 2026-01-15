@@ -152,22 +152,40 @@ module.exports = {
                         try {
                             const areneCommand = message.client.commands.get('arene');
                             if (areneCommand) {
+                                // Récupérer le membre du serveur
+                                let challengerMember = message.guild?.members.cache.get(challengerUser.id);
+                                if (!challengerMember && message.guild) {
+                                    try {
+                                        challengerMember = await message.guild.members.fetch(challengerUser.id);
+                                    } catch (e) {
+                                        throw new Error(`Membre ${challengerUser.username} introuvable sur le serveur`);
+                                    }
+                                }
+                                
+                                if (!challengerMember) {
+                                    throw new Error(`Membre ${challengerUser.username} introuvable sur le serveur`);
+                                }
+                                
                                 // Créer un message simulé avec la mention correcte
-                                const fakeMessage = Object.assign(Object.create(Object.getPrototypeOf(message)), message);
-                                fakeMessage.content = `$arene <@${challengerUser.id}>`;
-                                
-                                // Créer une collection de mentions users
-                                const { Collection } = require('discord.js');
-                                const mentionsUsers = new Collection();
-                                mentionsUsers.set(challengerUser.id, challengerUser);
-                                
-                                const mentionsMembers = new Collection();
-                                const member = message.guild?.members.cache.get(challengerUser.id);
-                                if (member) mentionsMembers.set(challengerUser.id, member);
-                                
-                                fakeMessage.mentions = {
-                                    users: mentionsUsers,
-                                    members: mentionsMembers,
+                                const fakeMessage = {
+                                    ...message,
+                                    content: `$arene <@${challengerUser.id}>`,
+                                    mentions: {
+                                        users: message.mentions.users?.constructor?.name === 'Collection' 
+                                            ? message.mentions.users 
+                                            : (() => {
+                                                const { Collection } = require('discord.js');
+                                                const col = new Collection();
+                                                col.set(challengerUser.id, challengerUser);
+                                                return col;
+                                            })(),
+                                        members: (() => {
+                                            const { Collection } = require('discord.js');
+                                            const col = new Collection();
+                                            if (challengerMember) col.set(challengerUser.id, challengerMember);
+                                            return col;
+                                        })(),
+                                    }
                                 };
                                 
                                 // Appeler arene avec les arguments corrects
