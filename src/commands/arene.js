@@ -189,8 +189,8 @@ module.exports = {
                 const userCrit = Math.random() < (0.08 + userStats.critChance); // Reduced base crit
                 const rawUserDamage = userCrit ? Math.floor(userAttack * (2 + Math.random())) : userAttack;
                 
-                // User can also miss (for balance)
-                const userMiss = Math.random() < 0.10;
+                // User can also miss (increased miss chance for balance)
+                const userMiss = Math.random() < 0.12; // Increased from 10% to 12%
                 if (userMiss && !userCrit) {
                     combatLog.push(`❌ **${message.author.username}** rate son attaque !`);
                 } else {
@@ -332,14 +332,16 @@ module.exports = {
                 const updatedUser = getUser(userId);
                 updatedUser.stats = { 
                     ...updatedUser.stats, 
-                    wins: (updatedUser.stats.wins || 0) + 1 
+                    wins: (updatedUser.stats?.wins || 0) + 1,
+                    losses: updatedUser.stats?.losses || 0  // Preserve losses
                 };
                 updateUser(userId, updatedUser);
                 
                 const updatedOpponent = getUser(opponentId);
                 updatedOpponent.stats = { 
                     ...updatedOpponent.stats, 
-                    losses: (updatedOpponent.stats.losses || 0) + 1 
+                    wins: updatedOpponent.stats?.wins || 0,  // Preserve wins
+                    losses: (updatedOpponent.stats?.losses || 0) + 1 
                 };
                 updateUser(opponentId, updatedOpponent);
                 
@@ -383,14 +385,16 @@ module.exports = {
                 const updatedUser = getUser(userId);
                 updatedUser.stats = { 
                     ...updatedUser.stats, 
-                    losses: (updatedUser.stats.losses || 0) + 1 
+                    wins: updatedUser.stats?.wins || 0,  // Preserve wins
+                    losses: (updatedUser.stats?.losses || 0) + 1 
                 };
                 updateUser(userId, updatedUser);
                 
                 const updatedOpponent = getUser(opponentId);
                 updatedOpponent.stats = { 
                     ...updatedOpponent.stats, 
-                    wins: (updatedOpponent.stats.wins || 0) + 1 
+                    wins: (updatedOpponent.stats?.wins || 0) + 1,
+                    losses: updatedOpponent.stats?.losses || 0  // Preserve losses
                 };
                 updateUser(opponentId, updatedOpponent);
                 
