@@ -8,6 +8,15 @@ module.exports = {
         console.log(`✅ Bot connecté en tant que ${client.user.tag}!`);
         console.log(`📊 Servant ${client.guilds.cache.size} serveur(s)`);
         
+        // Définir le statut du bot (watching)
+        client.user.setPresence({
+            activities: [{
+                name: 'https://guns.lol/0xRynal',
+                type: 3 // WATCHING
+            }],
+            status: 'online'
+        });
+        
         // Setup daily shop reset at midnight
         setupDailyShopReset();
     },
