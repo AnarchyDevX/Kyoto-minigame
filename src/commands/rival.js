@@ -188,8 +188,8 @@ module.exports = {
                                     }
                                 };
                                 
-                                // Appeler arene avec les arguments corrects
-                                await areneCommand.execute(fakeMessage, []);
+                                // Appeler arene avec les arguments corrects (mention de l'utilisateur)
+                                await areneCommand.execute(fakeMessage, [`<@${challengerUser.id}>`]);
                             } else {
                                 throw new Error('Commande arene introuvable');
                             }

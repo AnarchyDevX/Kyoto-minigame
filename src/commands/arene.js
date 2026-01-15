@@ -128,7 +128,8 @@ module.exports = {
             user = getUser(userId);
             
             // Check for pending rival challenge (both directions)
-            if (isFriend && opponentId) {
+            // Note: isFriend can be false for new challenges, so we check for challenges regardless
+            if (opponentId) {
                 // Check if opponent has a challenge for user (user is the target)
                 const opponentData = getUser(opponentId);
                 if (opponentData.rivalries?.challenges && Array.isArray(opponentData.rivalries.challenges)) {
