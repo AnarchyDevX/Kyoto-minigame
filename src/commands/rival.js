@@ -119,10 +119,19 @@ module.exports = {
                         updateUser(challenge.fromUserId, challengerData);
                     }
                     
+                    // Remove challenge from challenger's list
+                    const challengerData = getUser(challenge.fromUserId);
+                    if (challengerData.rivalries?.challenges && Array.isArray(challengerData.rivalries.challenges)) {
+                        challengerData.rivalries.challenges = challengerData.rivalries.challenges.filter(
+                            c => !(c && c.toUserId === userId && c.createdAt === challenge.createdAt)
+                        );
+                        updateUser(challenge.fromUserId, challengerData);
+                    }
+                    
                     const acceptEmbed = new EmbedBuilder()
                         .setColor(0x00FF00)
                         .setTitle('✅ Défi accepté !')
-                        .setDescription(`Tu as accepté le défi de **${challengerUser.username}** pour **${challenge.coins.toLocaleString()}💰**\n\nLe combat va commencer avec \`$arene @${challengerUser.username}\``)
+                        .setDescription(`Tu as accepté le défi de **${challengerUser.username}** pour **${challenge.coins.toLocaleString()}💰**\n\nLe combat va commencer avec \`$arene @${challengerUser.username}\`\n\n💡 **Astuce:** Exécutez \`$arene @${challengerUser.username}\` pour commencer le combat !`)
                         .setThumbnail(challengerUser.displayAvatarURL())
                         .setFooter({ 
                             text: message.author.username,
@@ -130,7 +139,20 @@ module.exports = {
                         })
                         .setTimestamp();
                     
-                    return message.reply({ embeds: [acceptEmbed] });
+                    await message.reply({ embeds: [acceptEmbed] });
+                    
+                    // Wait a bit then remind user to use arene
+                    setTimeout(() => {
+                        message.channel.send(`⚔️ **Rappel:** Utilisez \`$arene @${challengerUser.username}\` pour commencer le combat avec le défi accepté !`)
+                            .then(msg => {
+                                setTimeout(() => {
+                                    msg.delete().catch(() => {});
+                                }, 10000);
+                            })
+                            .catch(() => {});
+                    }, 2000);
+                    
+                    return;
                 }
                 
                 // Sinon, lister les challenges en attente
