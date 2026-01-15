@@ -9,7 +9,7 @@ module.exports = {
             
             try {
                 const userId = message.author.id;
-                const user = getUser(userId);
+                let user = getUser(userId);
                 const now = Date.now();
                 
                 // Check charges
