@@ -124,13 +124,16 @@ module.exports = {
             // Get opponent data
             opponent = getUser(opponentId);
             
+            // Re-fetch user data to ensure it's up to date
+            user = getUser(userId);
+            
             // Check for pending rival challenge (both directions)
             if (isFriend && opponentId) {
-                // Check if opponent has a challenge for user
+                // Check if opponent has a challenge for user (user is the target)
                 const opponentData = getUser(opponentId);
-                if (opponentData.rivalries?.challenges) {
+                if (opponentData.rivalries?.challenges && Array.isArray(opponentData.rivalries.challenges)) {
                     const pendingChallenge = opponentData.rivalries.challenges.find(
-                        c => c.toUserId === userId && c.status === 'pending'
+                        c => c && c.toUserId === userId && c.status === 'pending'
                     );
                     if (pendingChallenge) {
                         // Verify user has enough coins
@@ -138,17 +141,17 @@ module.exports = {
                             challengeBet = pendingChallenge.coins;
                             // Remove challenge as it will be accepted
                             opponentData.rivalries.challenges = opponentData.rivalries.challenges.filter(
-                                c => !(c.toUserId === userId && c.createdAt === pendingChallenge.createdAt)
+                                c => !(c && c.toUserId === userId && c.createdAt === pendingChallenge.createdAt)
                             );
                             updateUser(opponentId, opponentData);
                         }
                     }
                 }
                 
-                // Also check if user has a challenge for opponent
-                if (challengeBet === 0 && user.rivalries?.challenges) {
+                // Also check if user has a challenge for opponent (opponent is the target)
+                if (challengeBet === 0 && user.rivalries?.challenges && Array.isArray(user.rivalries.challenges)) {
                     const userChallenge = user.rivalries.challenges.find(
-                        c => c.toUserId === opponentId && c.status === 'pending'
+                        c => c && c.toUserId === opponentId && c.status === 'pending'
                     );
                     if (userChallenge) {
                         // Verify opponent has enough coins
@@ -156,7 +159,7 @@ module.exports = {
                             challengeBet = userChallenge.coins;
                             // Remove challenge as it will be accepted
                             user.rivalries.challenges = user.rivalries.challenges.filter(
-                                c => !(c.toUserId === opponentId && c.createdAt === userChallenge.createdAt)
+                                c => !(c && c.toUserId === opponentId && c.createdAt === userChallenge.createdAt)
                             );
                             updateUser(userId, user);
                         }
