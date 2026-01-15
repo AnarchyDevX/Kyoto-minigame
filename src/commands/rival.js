@@ -53,10 +53,22 @@ module.exports = {
                 return message.reply({ embeds: [listEmbed] });
             }
             
-            if (args[0] === 'challenge' && message.mentions.members.size > 0) {
-                const target = message.mentions.members.first();
+            if (args[0] === 'challenge' && message.mentions.users.size > 0) {
+                const targetUser = message.mentions.users.first();
+                const targetMember = message.mentions.members.first() || await message.guild.members.fetch(targetUser.id).catch(() => null);
+                
                 // Trouver le montant (premier argument numérique après 'challenge')
                 const bet = parseInt(args.find(arg => !isNaN(parseInt(arg)) && parseInt(arg) > 0)) || 0;
+                
+                if (!targetUser) {
+                    const errorEmbed = new EmbedBuilder()
+                        .setColor(0xFF0000)
+                        .setTitle('❌ Utilisateur introuvable')
+                        .setDescription('Impossible de trouver l\'utilisateur mentionné.')
+                        .setTimestamp();
+                    
+                    return message.reply({ embeds: [errorEmbed] });
+                }
                 
                 if (bet < 100 || bet > user.coins) {
                     const errorEmbed = new EmbedBuilder()
@@ -72,7 +84,7 @@ module.exports = {
                 if (!user.rivalries) user.rivalries = { challenges: [] };
                 user.rivalries.challenges.push({
                     fromUserId: userId,
-                    toUserId: target.id,
+                    toUserId: targetUser.id,
                     coins: bet,
                     status: 'pending',
                     createdAt: Date.now(),
@@ -82,8 +94,8 @@ module.exports = {
                 const successEmbed = new EmbedBuilder()
                     .setColor(0x00FF00)
                     .setTitle('⚔️ Défi envoyé !')
-                    .setDescription(`Défi envoyé à **${target.user.username}** pour **${bet.toLocaleString()}💰**\n\nIl peut accepter avec \`$arene @${message.author.username}\``)
-                    .setThumbnail(target.user.displayAvatarURL())
+                    .setDescription(`Défi envoyé à **${targetUser.username}** pour **${bet.toLocaleString()}💰**\n\nIl peut accepter avec \`$arene @${message.author.username}\``)
+                    .setThumbnail(targetUser.displayAvatarURL())
                     .setFooter({ 
                         text: message.author.username,
                         iconURL: message.author.displayAvatarURL()
