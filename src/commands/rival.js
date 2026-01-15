@@ -288,7 +288,7 @@ module.exports = {
                 const successEmbed = new EmbedBuilder()
                     .setColor(0x00FF00)
                     .setTitle('⚔️ Défi envoyé !')
-                    .setDescription(`Défi envoyé à **${targetUser.username}** pour **${bet.toLocaleString()}💰**\n\nIl peut accepter avec \`$arene @${message.author.username}\``)
+                    .setDescription(`Défi envoyé à **${targetUser.username}** pour **${bet.toLocaleString()}💰**\n\nIl peut accepter avec \`$rival accept @${message.author.username}\` pour lancer automatiquement le combat !`)
                     .setThumbnail(targetUser.displayAvatarURL())
                     .setFooter({ 
                         text: message.author.username,
