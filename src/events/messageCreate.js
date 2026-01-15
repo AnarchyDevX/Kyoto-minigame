@@ -33,12 +33,12 @@ module.exports = {
 
         // Vérifier si c'est une commande mini-jeu
         if (gameCommands.includes(commandName)) {
-            // Vérifier si c'est le bon channel par nom (plus robuste que l'ID)
-            if (message.channel.name !== '🕹️・mini-jeu') {
+            // Vérifier si c'est le bon channel
+            if (message.channel.id !== config.gamesChannelId) {
                 const errorEmbed = new EmbedBuilder()
                     .setColor(0xFF0000)
                     .setTitle('❌ Channel incorrect')
-                    .setDescription(`Les commandes mini-jeux ne peuvent être utilisées que dans le channel **🕹️・mini-jeu**.`)
+                    .setDescription(`Les commandes mini-jeux ne peuvent être utilisées que dans <#${config.gamesChannelId}>.`)
                     .setFooter({ 
                         text: message.author.username,
                         iconURL: message.author.displayAvatarURL()

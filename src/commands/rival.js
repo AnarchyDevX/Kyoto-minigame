@@ -55,7 +55,8 @@ module.exports = {
             
             if (args[0] === 'challenge' && message.mentions.members.size > 0) {
                 const target = message.mentions.members.first();
-                const bet = parseInt(args[1]) || 0;
+                // Trouver le montant (premier argument numérique après 'challenge')
+                const bet = parseInt(args.find(arg => !isNaN(parseInt(arg)) && parseInt(arg) > 0)) || 0;
                 
                 if (bet < 100 || bet > user.coins) {
                     const errorEmbed = new EmbedBuilder()
