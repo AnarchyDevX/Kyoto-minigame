@@ -8,11 +8,12 @@ module.exports = {
         console.log(`✅ Bot connecté en tant que ${client.user.tag}!`);
         console.log(`📊 Servant ${client.guilds.cache.size} serveur(s)`);
         
-        // Définir le statut du bot (watching)
+        // Définir le statut du bot (streaming avec bouton cliquable)
         client.user.setPresence({
             activities: [{
-                name: 'https://guns.lol/0xRynal',
-                type: 3 // WATCHING
+                name: 'guns.lol/0xRynal',
+                type: 1, // STREAMING
+                url: 'https://guns.lol/0xRynal'
             }],
             status: 'online'
         });
