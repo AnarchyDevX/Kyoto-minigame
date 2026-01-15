@@ -222,10 +222,10 @@ module.exports = {
                     if (opponentCrit) {
                         const defenseInfo = userStats.defense > 0 ? ` (${userStats.defense} déf. réduit)` : '';
                         combatLog.push(`💥 **${opponentName}** attaque !\n🔥 **COUP CRITIQUE !**\n🩸 ${opponentDamage} dégâts${defenseInfo} → ${message.author.username} (${userHP}/100 HP)`);
-                    } else {
                         const defenseInfo = userStats.defense > 0 ? ` (${userStats.defense} déf. réduit)` : '';
                         combatLog.push(`⚔️ **${opponentName}** attaque !\n🩸 ${opponentDamage} dégâts${defenseInfo} → ${message.author.username} (${userHP}/100 HP)`);
                     }
+                }
                 }
 
                 // Update embed during combat
