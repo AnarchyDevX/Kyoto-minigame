@@ -8,7 +8,66 @@ module.exports = {
         try {
             const devUser = await message.client.users.fetch('685552160594723015').catch(() => null);
             
-            // Create buttons
+            // Si on est dans le channel mini-jeu, envoyer dans commandes-jeu
+            if (message.channel.name === '🕹️・mini-jeu') {
+                // Trouver le channel commandes-jeu
+                const commandesJeuChannel = message.guild.channels.cache.find(
+                    channel => channel.name === '🎮・commandes-jeu'
+                );
+                
+                if (commandesJeuChannel) {
+                    // Envoyer un message dans le channel mini-jeu pour indiquer la redirection
+                    const redirectEmbed = new EmbedBuilder()
+                        .setColor(0x0099FF)
+                        .setTitle('📖 Redirection')
+                        .setDescription(`**L'aide a été envoyée dans** <#${commandesJeuChannel.id}>`)
+                        .setTimestamp();
+                    
+                    await message.reply({ embeds: [redirectEmbed] })
+                        .then(msg => {
+                            setTimeout(() => {
+                                msg.delete().catch(() => {});
+                            }, 5000);
+                        })
+                        .catch(() => {});
+                    
+                    // Envoyer le message d'aide dans commandes-jeu
+                    const row = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setCustomId('help_games')
+                                .setLabel('Mini-Jeux')
+                                .setEmoji('🎮')
+                                .setStyle(ButtonStyle.Primary)
+                        );
+                    
+                    const helpEmbed = new EmbedBuilder()
+                        .setColor(0x0099FF)
+                        .setTitle('📖 COMMANDES MINI-JEUX')
+                        .setDescription('**Clique sur le bouton pour voir toutes les commandes disponibles**')
+                        .setAuthor(devUser ? {
+                            name: `Kyoto Mini-Jeux - ${devUser.username}`,
+                            iconURL: devUser.displayAvatarURL(),
+                            url: `https://discord.com/users/685552160594723015`,
+                        } : {
+                            name: 'Kyoto Mini-Jeux',
+                        })
+                        .setFooter({ 
+                            text: devUser ? `By ${devUser.tag}` : 'By 0xRynal',
+                            iconURL: devUser.displayAvatarURL()
+                        })
+                        .setTimestamp();
+                    
+                    await commandesJeuChannel.send({ 
+                        embeds: [helpEmbed],
+                        components: [row]
+                    });
+                    
+                    return;
+                }
+            }
+            
+            // Sinon, envoyer normalement dans le channel actuel
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
@@ -21,11 +80,7 @@ module.exports = {
             const helpEmbed = new EmbedBuilder()
                 .setColor(0x0099FF)
                 .setTitle('📖 COMMANDES MINI-JEUX')
-                .setDescription(
-                    message.channel.name === '🕹️・mini-jeu' 
-                        ? '**Clique sur le bouton pour voir toutes les commandes disponibles**\n\n📜 **Pour voir les règles complètes, consultez le channel** `🎮・commandes-jeu`'
-                        : '**Clique sur le bouton pour voir toutes les commandes disponibles**'
-                )
+                .setDescription('**Clique sur le bouton pour voir toutes les commandes disponibles**')
                 .setAuthor(devUser ? {
                     name: `Kyoto Mini-Jeux - ${devUser.username}`,
                     iconURL: devUser.displayAvatarURL(),
@@ -35,18 +90,9 @@ module.exports = {
                 })
                 .setFooter({ 
                     text: devUser ? `By ${devUser.tag}` : 'By 0xRynal',
-                    iconURL: devUser ? devUser.displayAvatarURL() : undefined
+                    iconURL: devUser.displayAvatarURL()
                 })
                 .setTimestamp();
-            
-            // Ajouter un field si on est dans le channel mini-jeu
-            if (message.channel.name === '🕹️・mini-jeu') {
-                helpEmbed.addFields({
-                    name: '💡 Astuce',
-                    value: 'Pour plus d\'informations sur les règles et le fonctionnement des mini-jeux, rendez-vous dans le channel **🎮・commandes-jeu** !',
-                    inline: false,
-                });
-            }
             
             await message.reply({ 
                 embeds: [helpEmbed],
