@@ -1,0 +1,139 @@
+{
+  "lastReset": "2026-01-14T23:00:00.000Z",
+  "shop": {
+    "cles": {
+      "title": "🔑 Clés",
+      "items": [
+        {
+          "name": "Clé Argent",
+          "type": "key",
+          "keyType": "argent",
+          "basePrice": 750,
+          "emoji": "⚪",
+          "rarity": "rare",
+          "weight": 0.3,
+          "rarityInfo": {
+            "name": "Rare",
+            "emoji": "🔵",
+            "dropRate": 0.3,
+            "priceMultiplier": 1.5,
+            "color": 39423
+          }
+        },
+        {
+          "name": "Clé Argent",
+          "type": "key",
+          "keyType": "argent",
+          "basePrice": 750,
+          "emoji": "⚪",
+          "rarity": "rare",
+          "weight": 0.3,
+          "rarityInfo": {
+            "name": "Rare",
+            "emoji": "🔵",
+            "dropRate": 0.3,
+            "priceMultiplier": 1.5,
+            "color": 39423
+          }
+        },
+        {
+          "name": "Clé Bois",
+          "type": "key",
+          "keyType": "bois",
+          "basePrice": 200,
+          "emoji": "🟤",
+          "rarity": "commun",
+          "weight": 0.5,
+          "rarityInfo": {
+            "name": "Commun",
+            "emoji": "⚪",
+            "dropRate": 0.5,
+            "priceMultiplier": 1,
+            "color": 8421504
+          }
+        }
+      ]
+    },
+    "objets": {
+      "title": "⚔️ Objets",
+      "items": [
+        {
+          "name": "Bouclier de Fer",
+          "type": "item",
+          "itemType": "bouclier",
+          "basePrice": 5000,
+          "emoji": "🛡️",
+          "effect": {
+            "defenseBoost": 15
+          },
+          "rarity": "epique",
+          "weight": 0.075,
+          "rarityInfo": {
+            "name": "Épique",
+            "emoji": "🟣",
+            "dropRate": 0.15,
+            "priceMultiplier": 2.5,
+            "color": 10181046
+          }
+        },
+        {
+          "name": "Épée de la Destinée",
+          "type": "item",
+          "itemType": "lame",
+          "basePrice": 25000,
+          "emoji": "⚔️",
+          "effect": {
+            "damageBoost": 35
+          },
+          "rarity": "legendaire",
+          "weight": 0.025,
+          "rarityInfo": {
+            "name": "Légendaire",
+            "emoji": "🟡",
+            "dropRate": 0.05,
+            "priceMultiplier": 5,
+            "color": 16766720
+          }
+        },
+        {
+          "name": "Lame Émoussée",
+          "type": "item",
+          "itemType": "lame",
+          "basePrice": 300,
+          "emoji": "⚔️",
+          "effect": {
+            "damageBoost": 5
+          },
+          "rarity": "commun",
+          "weight": 0.25,
+          "rarityInfo": {
+            "name": "Commun",
+            "emoji": "⚪",
+            "dropRate": 0.5,
+            "priceMultiplier": 1,
+            "color": 8421504
+          }
+        },
+        {
+          "name": "Armure Légère",
+          "type": "item",
+          "itemType": "armure",
+          "basePrice": 1200,
+          "emoji": "🛡️",
+          "effect": {
+            "defenseBoost": 8
+          },
+          "rarity": "rare",
+          "weight": 0.15,
+          "rarityInfo": {
+            "name": "Rare",
+            "emoji": "🔵",
+            "dropRate": 0.3,
+            "priceMultiplier": 1.5,
+            "color": 39423
+          }
+        }
+      ]
+    }
+  }
+}

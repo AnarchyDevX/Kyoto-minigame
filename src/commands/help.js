@@ -1,3 +1,5 @@
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
+
 module.exports = {
     data: {
         name: 'help',
@@ -6,83 +8,45 @@ module.exports = {
         try {
             const devUser = await message.client.users.fetch('685552160594723015').catch(() => null);
             
-            await message.reply({
-                embeds: [{
-                    color: 0x0099FF,
-                    title: '📖 Commandes disponibles',
-                    author: devUser ? {
-                        name: `Kyoto Sanction - ${devUser.username}`,
-                        icon_url: devUser.displayAvatarURL(),
-                        url: `https://discord.com/users/685552160594723015`,
-                    } : {
-                        name: 'Kyoto Sanction',
-                    },
-                    fields: [
-                        {
-                            name: '🔇 &mute @user <durée> [raison]',
-                            value: 'Mute un utilisateur (max 1h)\nEx: `&mute @user 30m Spam`',
-                            inline: true,
-                        },
-                        {
-                            name: '⏱️ &timeout @user <durée> [raison]',
-                            value: 'Timeout un utilisateur (max 10min)\nEx: `&timeout @user 5m Insultes`',
-                            inline: true,
-                        },
-                        {
-                            name: '🔓 &unmute @user',
-                            value: 'Retire le mute',
-                            inline: true,
-                        },
-                        {
-                            name: '🔓 &untimeout @user',
-                            value: 'Retire le timeout',
-                            inline: true,
-                        },
-                        {
-                            name: '✅ &wladd @role',
-                            value: 'Ajoute un rôle à la whitelist',
-                            inline: true,
-                        },
-                        {
-                            name: '❌ &wlremove @role',
-                            value: 'Retire un rôle de la whitelist',
-                            inline: true,
-                        },
-                        {
-                            name: '📋 &wllist',
-                            value: 'Liste les rôles whitelistés',
-                            inline: true,
-                        },
-                        {
-                            name: '✅ &semiwladd @role',
-                            value: 'Ajoute un rôle à la semi-whitelist (mute uniquement)',
-                            inline: true,
-                        },
-                        {
-                            name: '❌ &semiwlremove @role',
-                            value: 'Retire un rôle de la semi-whitelist',
-                            inline: true,
-                        },
-                        {
-                            name: '📋 &semiwllist',
-                            value: 'Liste les rôles semi-whitelistés',
-                            inline: true,
-                        },
-                        {
-                            name: '👑 &setadmin @role',
-                            value: 'Définit un rôle admin pour gérer les whitelists',
-                            inline: true,
-                        },
-                    ],
-                    footer: {
-                        text: devUser ? `By ${devUser.tag}` : 'By 0xRynal',
-                    },
-                    timestamp: new Date().toISOString(),
-                }],
+            // Create buttons
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('help_games')
+                        .setLabel('Mini-Jeux')
+                        .setEmoji('🎮')
+                        .setStyle(ButtonStyle.Primary)
+                );
+            
+            const helpEmbed = new EmbedBuilder()
+                .setColor(0x0099FF)
+                .setTitle('📖 COMMANDES MINI-JEUX')
+                .setDescription('**Clique sur le bouton pour voir toutes les commandes disponibles**')
+                .setAuthor(devUser ? {
+                    name: `Kyoto Mini-Jeux - ${devUser.username}`,
+                    iconURL: devUser.displayAvatarURL(),
+                    url: `https://discord.com/users/685552160594723015`,
+                } : {
+                    name: 'Kyoto Mini-Jeux',
+                })
+                .setFooter({ 
+                    text: devUser ? `By ${devUser.tag}` : 'By 0xRynal',
+                    iconURL: devUser ? devUser.displayAvatarURL() : undefined
+                })
+                .setTimestamp();
+            
+            await message.reply({ 
+                embeds: [helpEmbed],
+                components: [row]
             });
         } catch (error) {
             console.error('Erreur lors de l\'affichage de l\'aide:', error);
-            message.reply('❌ Une erreur s\'est produite lors de l\'affichage de l\'aide.');
+            const errorEmbed = new EmbedBuilder()
+                .setColor(0xFF0000)
+                .setTitle('❌ Erreur')
+                .setDescription('Une erreur s\'est produite lors de l\'affichage de l\'aide.')
+                .setTimestamp();
+            message.reply({ embeds: [errorEmbed] });
         }
     },
 };

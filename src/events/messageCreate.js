@@ -1,5 +1,5 @@
 const config = require('../config');
-const { PermissionFlagsBits, ChannelType } = require('discord.js');
+const { PermissionFlagsBits, ChannelType, EmbedBuilder } = require('discord.js');
 
 module.exports = {
     name: 'messageCreate',
@@ -24,11 +24,47 @@ module.exports = {
 
         if (!command) return;
 
+        // Liste des commandes mini-jeux qui nécessitent le channel spécifique
+        const gameCommands = [
+            'destin', 'arene', 'ouvrir', 'shop', 'inventaire', 
+            'resume', 'rival', 'objectifs', 'prestige', 'daily', 
+            'classement', 'ameliorer', 'reparer', 'createfakes', 'help'
+        ];
+
+        // Vérifier si c'est une commande mini-jeu
+        if (gameCommands.includes(commandName)) {
+            // Vérifier si c'est le bon channel
+            if (message.channel.id !== config.gamesChannelId) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor(0xFF0000)
+                    .setTitle('❌ Channel incorrect')
+                    .setDescription(`Les commandes mini-jeux ne peuvent être utilisées que dans <#${config.gamesChannelId}>.`)
+                    .setFooter({ 
+                        text: message.author.username,
+                        iconURL: message.author.displayAvatarURL()
+                    })
+                    .setTimestamp();
+                
+                return message.reply({ embeds: [errorEmbed] })
+                    .then(msg => {
+                        setTimeout(() => {
+                            msg.delete().catch(() => {});
+                        }, 5000);
+                    })
+                    .catch(() => {});
+            }
+        }
+
         try {
             command.execute(message, args);
         } catch (error) {
             console.error(`Erreur lors de l'exécution de la commande ${commandName}:`, error);
-            message.reply('❌ Une erreur s\'est produite lors de l\'exécution de cette commande.');
+            const errorEmbed = new EmbedBuilder()
+                .setColor(0xFF0000)
+                .setTitle('❌ Erreur')
+                .setDescription('Une erreur s\'est produite lors de l\'exécution de cette commande.')
+                .setTimestamp();
+            message.reply({ embeds: [errorEmbed] });
         }
     },
 };

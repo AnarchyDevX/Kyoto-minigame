@@ -31,6 +31,7 @@ Thumbs.db
 src/data/whitelist.json
 src/data/semiwhitelist.json
 src/data/adminrole.json
+src/data/users.json
 
 # Build files
 dist/
