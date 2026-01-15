@@ -8,7 +8,7 @@ module.exports = {
         try {
             const devUser = await message.client.users.fetch('685552160594723015').catch(() => null);
             
-            // Si on est dans le channel mini-jeu, envoyer dans commandes-jeu
+            // Si on est dans le channel mini-jeu, rediriger vers commandes-jeu
             if (message.channel.name === '🕹️・mini-jeu') {
                 // Trouver le channel commandes-jeu
                 const commandesJeuChannel = message.guild.channels.cache.find(
@@ -16,54 +16,24 @@ module.exports = {
                 );
                 
                 if (commandesJeuChannel) {
-                    // Envoyer un message dans le channel mini-jeu pour indiquer la redirection
+                    // Envoyer un message de redirection dans le channel mini-jeu
                     const redirectEmbed = new EmbedBuilder()
                         .setColor(0x0099FF)
                         .setTitle('📖 Redirection')
-                        .setDescription(`**L'aide a été envoyée dans** <#${commandesJeuChannel.id}>`)
+                        .setDescription(`**L'aide est disponible dans** <#${commandesJeuChannel.id}>\n\nConsultez ce channel pour voir toutes les commandes et règles disponibles.`)
+                        .setFooter({ 
+                            text: message.author.username,
+                            iconURL: message.author.displayAvatarURL()
+                        })
                         .setTimestamp();
                     
-                    await message.reply({ embeds: [redirectEmbed] })
+                    return message.reply({ embeds: [redirectEmbed] })
                         .then(msg => {
                             setTimeout(() => {
                                 msg.delete().catch(() => {});
-                            }, 5000);
+                            }, 10000); // Supprimer après 10 secondes au lieu de 5
                         })
                         .catch(() => {});
-                    
-                    // Envoyer le message d'aide dans commandes-jeu
-                    const row = new ActionRowBuilder()
-                        .addComponents(
-                            new ButtonBuilder()
-                                .setCustomId('help_games')
-                                .setLabel('Mini-Jeux')
-                                .setEmoji('🎮')
-                                .setStyle(ButtonStyle.Primary)
-                        );
-                    
-                    const helpEmbed = new EmbedBuilder()
-                        .setColor(0x0099FF)
-                        .setTitle('📖 COMMANDES MINI-JEUX')
-                        .setDescription('**Clique sur le bouton pour voir toutes les commandes disponibles**')
-                        .setAuthor(devUser ? {
-                            name: `Kyoto Mini-Jeux - ${devUser.username}`,
-                            iconURL: devUser.displayAvatarURL(),
-                            url: `https://discord.com/users/685552160594723015`,
-                        } : {
-                            name: 'Kyoto Mini-Jeux',
-                        })
-                        .setFooter({ 
-                            text: devUser ? `By ${devUser.tag}` : 'By 0xRynal',
-                            iconURL: devUser.displayAvatarURL()
-                        })
-                        .setTimestamp();
-                    
-                    await commandesJeuChannel.send({ 
-                        embeds: [helpEmbed],
-                        components: [row]
-                    });
-                    
-                    return;
                 }
             }
             
