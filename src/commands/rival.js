@@ -110,28 +110,32 @@ module.exports = {
                         return message.reply({ embeds: [errorEmbed] });
                     }
                     
-                    // Supprimer le challenge et rediriger vers arene
+                    // Vérifier que le challenger a assez de pièces
                     const challengerData = getUser(challenge.fromUserId);
-                    if (challengerData.rivalries?.challenges) {
-                        challengerData.rivalries.challenges = challengerData.rivalries.challenges.filter(
-                            c => !(c.toUserId === userId && c.createdAt === challenge.createdAt)
-                        );
-                        updateUser(challenge.fromUserId, challengerData);
+                    if (challengerData.coins < challenge.coins) {
+                        const errorEmbed = new EmbedBuilder()
+                            .setColor(0xFF0000)
+                            .setTitle('❌ Challenge invalide')
+                            .setDescription(`**${challengerUser.username}** n'a plus assez de pièces pour ce défi.\n\n**Mise:** ${challenge.coins.toLocaleString()}💰`)
+                            .setTimestamp();
+                        
+                        // Supprimer le challenge invalide
+                        if (challengerData.rivalries?.challenges && Array.isArray(challengerData.rivalries.challenges)) {
+                            challengerData.rivalries.challenges = challengerData.rivalries.challenges.filter(
+                                c => !(c && c.toUserId === userId && c.createdAt === challenge.createdAt)
+                            );
+                            updateUser(challenge.fromUserId, challengerData);
+                        }
+                        
+                        return message.reply({ embeds: [errorEmbed] });
                     }
                     
-                    // Remove challenge from challenger's list
-                    const challengerData = getUser(challenge.fromUserId);
-                    if (challengerData.rivalries?.challenges && Array.isArray(challengerData.rivalries.challenges)) {
-                        challengerData.rivalries.challenges = challengerData.rivalries.challenges.filter(
-                            c => !(c && c.toUserId === userId && c.createdAt === challenge.createdAt)
-                        );
-                        updateUser(challenge.fromUserId, challengerData);
-                    }
-                    
+                    // Accepter le défi et lancer automatiquement le combat
+                    // Ne PAS supprimer le challenge ici - il sera détecté et supprimé par arene.js
                     const acceptEmbed = new EmbedBuilder()
                         .setColor(0x00FF00)
                         .setTitle('✅ Défi accepté !')
-                        .setDescription(`Tu as accepté le défi de **${challengerUser.username}** pour **${challenge.coins.toLocaleString()}💰**\n\nLe combat va commencer avec \`$arene @${challengerUser.username}\`\n\n💡 **Astuce:** Exécutez \`$arene @${challengerUser.username}\` pour commencer le combat !`)
+                        .setDescription(`Défi accepté ! Le combat contre **${challengerUser.username}** commence...\n\n**Mise:** ${challenge.coins.toLocaleString()}💰`)
                         .setThumbnail(challengerUser.displayAvatarURL())
                         .setFooter({ 
                             text: message.author.username,
@@ -141,16 +145,46 @@ module.exports = {
                     
                     await message.reply({ embeds: [acceptEmbed] });
                     
-                    // Wait a bit then remind user to use arene
-                    setTimeout(() => {
-                        message.channel.send(`⚔️ **Rappel:** Utilisez \`$arene @${challengerUser.username}\` pour commencer le combat avec le défi accepté !`)
-                            .then(msg => {
-                                setTimeout(() => {
-                                    msg.delete().catch(() => {});
-                                }, 10000);
-                            })
-                            .catch(() => {});
-                    }, 2000);
+                    // Attendre un peu avant de lancer le combat pour que le message soit visible
+                    setTimeout(async () => {
+                        // Lancer automatiquement le combat en appelant la commande arene
+                        // Le challenge sera détecté et supprimé automatiquement par arene.js
+                        try {
+                            const areneCommand = message.client.commands.get('arene');
+                            if (areneCommand) {
+                                // Créer un message simulé avec la mention correcte
+                                const fakeMessage = Object.assign(Object.create(Object.getPrototypeOf(message)), message);
+                                fakeMessage.content = `$arene <@${challengerUser.id}>`;
+                                
+                                // Créer une collection de mentions users
+                                const { Collection } = require('discord.js');
+                                const mentionsUsers = new Collection();
+                                mentionsUsers.set(challengerUser.id, challengerUser);
+                                
+                                const mentionsMembers = new Collection();
+                                const member = message.guild?.members.cache.get(challengerUser.id);
+                                if (member) mentionsMembers.set(challengerUser.id, member);
+                                
+                                fakeMessage.mentions = {
+                                    users: mentionsUsers,
+                                    members: mentionsMembers,
+                                };
+                                
+                                // Appeler arene avec les arguments corrects
+                                await areneCommand.execute(fakeMessage, []);
+                            } else {
+                                throw new Error('Commande arene introuvable');
+                            }
+                        } catch (error) {
+                            console.error('Erreur lors du lancement automatique du combat:', error);
+                            const errorEmbed = new EmbedBuilder()
+                                .setColor(0xFF0000)
+                                .setTitle('❌ Erreur')
+                                .setDescription(`Une erreur s'est produite lors du lancement du combat.\n\nUtilisez manuellement: \`$arene @${challengerUser.username}\``)
+                                .setTimestamp();
+                            message.channel.send({ embeds: [errorEmbed] }).catch(() => {});
+                        }
+                    }, 1500);
                     
                     return;
                 }
