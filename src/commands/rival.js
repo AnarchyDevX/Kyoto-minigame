@@ -151,54 +151,61 @@ module.exports = {
                         // Le challenge sera détecté et supprimé automatiquement par arene.js
                         try {
                             const areneCommand = message.client.commands.get('arene');
-                            if (areneCommand) {
-                                // Récupérer le membre du serveur
-                                let challengerMember = message.guild?.members.cache.get(challengerUser.id);
-                                if (!challengerMember && message.guild) {
-                                    try {
-                                        challengerMember = await message.guild.members.fetch(challengerUser.id);
-                                    } catch (e) {
-                                        throw new Error(`Membre ${challengerUser.username} introuvable sur le serveur`);
-                                    }
-                                }
-                                
-                                if (!challengerMember) {
-                                    throw new Error(`Membre ${challengerUser.username} introuvable sur le serveur`);
-                                }
-                                
-                                // Créer un message simulé avec la mention correcte
-                                const fakeMessage = {
-                                    ...message,
-                                    content: `$arene <@${challengerUser.id}>`,
-                                    mentions: {
-                                        users: message.mentions.users?.constructor?.name === 'Collection' 
-                                            ? message.mentions.users 
-                                            : (() => {
-                                                const { Collection } = require('discord.js');
-                                                const col = new Collection();
-                                                col.set(challengerUser.id, challengerUser);
-                                                return col;
-                                            })(),
-                                        members: (() => {
-                                            const { Collection } = require('discord.js');
-                                            const col = new Collection();
-                                            if (challengerMember) col.set(challengerUser.id, challengerMember);
-                                            return col;
-                                        })(),
-                                    }
-                                };
-                                
-                                // Appeler arene avec les arguments corrects (mention de l'utilisateur)
-                                await areneCommand.execute(fakeMessage, [`<@${challengerUser.id}>`]);
-                            } else {
+                            if (!areneCommand) {
                                 throw new Error('Commande arene introuvable');
                             }
+                            
+                            // Récupérer le membre du serveur
+                            let challengerMember = message.guild?.members.cache.get(challengerUser.id);
+                            if (!challengerMember && message.guild) {
+                                try {
+                                    challengerMember = await message.guild.members.fetch(challengerUser.id);
+                                } catch (e) {
+                                    console.error('Erreur lors de la récupération du membre:', e);
+                                    throw new Error(`Membre ${challengerUser.username} introuvable sur le serveur`);
+                                }
+                            }
+                            
+                            if (!challengerMember) {
+                                throw new Error(`Membre ${challengerUser.username} introuvable sur le serveur`);
+                            }
+                            
+                            // Créer un message simulé avec la mention correcte
+                            const { Collection } = require('discord.js');
+                            
+                            // Créer les collections pour les mentions
+                            const mentionsUsers = new Collection();
+                            mentionsUsers.set(challengerUser.id, challengerUser);
+                            
+                            const mentionsMembers = new Collection();
+                            mentionsMembers.set(challengerUser.id, challengerMember);
+                            
+                            // Créer le message simulé en copiant toutes les propriétés du message original
+                            const fakeMessage = Object.assign({}, message, {
+                                content: `$arene <@${challengerUser.id}>`,
+                                mentions: {
+                                    users: mentionsUsers,
+                                    members: mentionsMembers,
+                                }
+                            });
+                            
+                            // S'assurer que les méthodes importantes sont préservées
+                            fakeMessage.reply = message.reply.bind(message);
+                            fakeMessage.channel = message.channel;
+                            fakeMessage.author = message.author;
+                            fakeMessage.guild = message.guild;
+                            fakeMessage.client = message.client;
+                            
+                            // Appeler arene avec les arguments corrects (mention de l'utilisateur dans args)
+                            const areneArgs = [`<@${challengerUser.id}>`];
+                            await areneCommand.execute(fakeMessage, areneArgs);
                         } catch (error) {
                             console.error('Erreur lors du lancement automatique du combat:', error);
+                            console.error('Stack:', error.stack);
                             const errorEmbed = new EmbedBuilder()
                                 .setColor(0xFF0000)
                                 .setTitle('❌ Erreur')
-                                .setDescription(`Une erreur s'est produite lors du lancement du combat.\n\nUtilisez manuellement: \`$arene @${challengerUser.username}\``)
+                                .setDescription(`Une erreur s'est produite lors du lancement du combat.\n\nUtilisez manuellement: \`$arene @${challengerUser.username}\`\n\nErreur: ${error.message}`)
                                 .setTimestamp();
                             message.channel.send({ embeds: [errorEmbed] }).catch(() => {});
                         }
