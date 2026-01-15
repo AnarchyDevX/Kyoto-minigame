@@ -78,11 +78,12 @@ module.exports = {
 
             // Récupérer les données de l'utilisateur cible
             const targetUserId = targetUser.id;
-            const targetUserData = getUser(targetUserId);
 
-            // Ajouter la clé à l'utilisateur
+            // Ajouter la clé à l'utilisateur (addKey fait déjà l'updateUser en interne)
             addKey(targetUserId, coffreType);
-            updateUser(targetUserId, targetUserData);
+            
+            // Récupérer les données à jour après l'ajout de la clé
+            const targetUserData = getUser(targetUserId);
 
             // Afficher le nom du coffre formaté
             const coffreNames = {
