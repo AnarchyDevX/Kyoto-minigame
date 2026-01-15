@@ -53,6 +53,110 @@ module.exports = {
                 return message.reply({ embeds: [listEmbed] });
             }
             
+            if (args[0] === 'accept') {
+                // Récupérer tous les utilisateurs pour trouver les challenges
+                const { getAllUsers } = require('../utils/game');
+                const allUsers = getAllUsers();
+                
+                // Trouver les challenges en attente pour cet utilisateur
+                const pendingChallenges = [];
+                for (const [fromUserId, fromUser] of Object.entries(allUsers)) {
+                    if (fromUser.rivalries?.challenges) {
+                        for (const challenge of fromUser.rivalries.challenges) {
+                            if (challenge.toUserId === userId && challenge.status === 'pending') {
+                                pendingChallenges.push({
+                                    ...challenge,
+                                    fromUserId: fromUserId,
+                                    challengeId: challenge.createdAt || Date.now()
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                if (pendingChallenges.length === 0) {
+                    const errorEmbed = new EmbedBuilder()
+                        .setColor(0xFF0000)
+                        .setTitle('❌ Aucun défi en attente')
+                        .setDescription('Tu n\'as aucun défi en attente.')
+                        .setTimestamp();
+                    
+                    return message.reply({ embeds: [errorEmbed] });
+                }
+                
+                // Si un utilisateur est mentionné, accepter son challenge
+                if (message.mentions.users.size > 0) {
+                    const challengerUser = message.mentions.users.first();
+                    const challenge = pendingChallenges.find(c => c.fromUserId === challengerUser.id);
+                    
+                    if (!challenge) {
+                        const errorEmbed = new EmbedBuilder()
+                            .setColor(0xFF0000)
+                            .setTitle('❌ Défi introuvable')
+                            .setDescription(`Tu n'as pas de défi en attente de **${challengerUser.username}**.`)
+                            .setTimestamp();
+                        
+                        return message.reply({ embeds: [errorEmbed] });
+                    }
+                    
+                    // Vérifier que l'utilisateur a assez de pièces
+                    if (user.coins < challenge.coins) {
+                        const errorEmbed = new EmbedBuilder()
+                            .setColor(0xFF0000)
+                            .setTitle('❌ Pièces insuffisantes')
+                            .setDescription(`Tu n'as pas assez de pièces pour accepter ce défi.\n\n**Mise:** ${challenge.coins.toLocaleString()}💰\n**Tes pièces:** ${user.coins.toLocaleString()}💰`)
+                            .setTimestamp();
+                        
+                        return message.reply({ embeds: [errorEmbed] });
+                    }
+                    
+                    // Supprimer le challenge et rediriger vers arene
+                    const challengerData = getUser(challenge.fromUserId);
+                    if (challengerData.rivalries?.challenges) {
+                        challengerData.rivalries.challenges = challengerData.rivalries.challenges.filter(
+                            c => !(c.toUserId === userId && c.createdAt === challenge.createdAt)
+                        );
+                        updateUser(challenge.fromUserId, challengerData);
+                    }
+                    
+                    const acceptEmbed = new EmbedBuilder()
+                        .setColor(0x00FF00)
+                        .setTitle('✅ Défi accepté !')
+                        .setDescription(`Tu as accepté le défi de **${challengerUser.username}** pour **${challenge.coins.toLocaleString()}💰**\n\nLe combat va commencer avec \`$arene @${challengerUser.username}\``)
+                        .setThumbnail(challengerUser.displayAvatarURL())
+                        .setFooter({ 
+                            text: message.author.username,
+                            iconURL: message.author.displayAvatarURL()
+                        })
+                        .setTimestamp();
+                    
+                    return message.reply({ embeds: [acceptEmbed] });
+                }
+                
+                // Sinon, lister les challenges en attente
+                const challengeList = [];
+                for (const challenge of pendingChallenges.slice(0, 10)) {
+                    try {
+                        const challengerUser = await message.client.users.fetch(challenge.fromUserId);
+                        challengeList.push(`**${challengerUser.username}** - **${challenge.coins.toLocaleString()}💰**\n➜ Accepter avec \`$rival accept @${challengerUser.username}\``);
+                    } catch (e) {
+                        challengeList.push(`**Joueur** ${challenge.fromUserId.slice(-4)} - **${challenge.coins.toLocaleString()}💰**`);
+                    }
+                }
+                
+                const listEmbed = new EmbedBuilder()
+                    .setColor(0x0099FF)
+                    .setTitle('⚔️ DÉFIS EN ATTENTE')
+                    .setDescription(challengeList.join('\n\n') || 'Aucun défi')
+                    .setFooter({ 
+                        text: `${pendingChallenges.length} défi${pendingChallenges.length > 1 ? 's' : ''} en attente`,
+                        iconURL: message.author.displayAvatarURL()
+                    })
+                    .setTimestamp();
+                
+                return message.reply({ embeds: [listEmbed] });
+            }
+            
             if (args[0] === 'challenge' && message.mentions.users.size > 0) {
                 const targetUser = message.mentions.users.first();
                 const targetMember = message.mentions.members.first() || await message.guild.members.fetch(targetUser.id).catch(() => null);
@@ -109,7 +213,7 @@ module.exports = {
             const helpEmbed = new EmbedBuilder()
                 .setColor(0x0099FF)
                 .setTitle('⚔️ SYSTÈME DE RIVALITÉS')
-                .setDescription('**Commandes disponibles :**\n\n`$rival list` - Liste tes rivaux\n`$rival challenge @user <mise>` - Défie un joueur avec une mise')
+                .setDescription('**Commandes disponibles :**\n\n`$rival list` - Liste tes rivaux\n`$rival challenge @user <mise>` - Défie un joueur avec une mise\n`$rival accept` - Liste tes défis en attente\n`$rival accept @user` - Accepte un défi d\'un joueur spécifique')
                 .addFields({
                     name: '💡 Astuce',
                     value: 'Les rivalités se créent automatiquement lors des combats en arène avec d\'autres joueurs.',

@@ -143,10 +143,11 @@ module.exports = {
             const opponentStats = calculateStats(opponent);
 
             // Send combat start embed
+            const challengeText = challengeBet > 0 ? `\n\n🏆 **DÉFI ACCEPTÉ : ${challengeBet.toLocaleString()}💰**` : '';
             const startEmbed = new EmbedBuilder()
                 .setColor(isFriend ? 0x00BFFF : 0xFF0000)
                 .setTitle(isFriend ? '⚔️ COMBAT AMICAL' : '⚔️ COMBAT D\'ARÈNE')
-                .setDescription(`**${message.author.username}** VS **${opponentName}**${isFriend ? ' 👥' : ''}\n\n🎲 Le combat commence...`)
+                .setDescription(`**${message.author.username}** VS **${opponentName}**${isFriend ? ' 👥' : ''}${challengeText}\n\n🎲 Le combat commence...`)
                 .setThumbnail(message.author.displayAvatarURL())
                 .setImage(opponentUser ? opponentUser.displayAvatarURL() : null)
                 .addFields(
@@ -301,6 +302,13 @@ module.exports = {
             }
             
             if (userWon) {
+                // Handle challenge bet if exists
+                if (challengeBet > 0) {
+                    // Winner gets opponent's bet
+                    addCoins(userId, challengeBet);
+                    addCoins(opponentId, -challengeBet);
+                }
+                
                 // Level-based rewards (higher level = better rewards)
                 const levelMultiplier = 1 + (user.level - 1) * 0.05;
                 const baseCoins = Math.floor(Math.random() * 300) + 80;
@@ -317,6 +325,10 @@ module.exports = {
                 const challengeUpdate = updateChallengeProgress(userId, 'arene');
                 
                 let rewardText = `💰 **+${coinsWon} pièces**`;
+                
+                if (challengeBet > 0) {
+                    rewardText += `\n🏆 **Défi gagné : +${challengeBet.toLocaleString()}💰**`;
+                }
                 
                 if (stolenCoins > 0) {
                     rewardText += `\n🔮 Sceau de l'Abîme : +${stolenCoins} pièces volées`;
@@ -380,6 +392,13 @@ module.exports = {
                 
                 await combatMsg.edit({ embeds: [victoryEmbed] });
             } else {
+                // Handle challenge bet if exists
+                if (challengeBet > 0) {
+                    // Loser loses bet, winner gets it
+                    addCoins(userId, -challengeBet);
+                    addCoins(opponentId, challengeBet);
+                }
+                
                 const coinsLost = Math.floor(Math.random() * 150) + 50;
                 addCoins(userId, -coinsLost);
                 const updatedUser = getUser(userId);
