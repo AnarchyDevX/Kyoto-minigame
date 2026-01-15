@@ -21,7 +21,11 @@ module.exports = {
             const helpEmbed = new EmbedBuilder()
                 .setColor(0x0099FF)
                 .setTitle('📖 COMMANDES MINI-JEUX')
-                .setDescription('**Clique sur le bouton pour voir toutes les commandes disponibles**')
+                .setDescription(
+                    message.channel.name === '🕹️・mini-jeu' 
+                        ? '**Clique sur le bouton pour voir toutes les commandes disponibles**\n\n📜 **Pour voir les règles complètes, consultez le channel** `🎮・commandes-jeu`'
+                        : '**Clique sur le bouton pour voir toutes les commandes disponibles**'
+                )
                 .setAuthor(devUser ? {
                     name: `Kyoto Mini-Jeux - ${devUser.username}`,
                     iconURL: devUser.displayAvatarURL(),
@@ -34,6 +38,15 @@ module.exports = {
                     iconURL: devUser ? devUser.displayAvatarURL() : undefined
                 })
                 .setTimestamp();
+            
+            // Ajouter un field si on est dans le channel mini-jeu
+            if (message.channel.name === '🕹️・mini-jeu') {
+                helpEmbed.addFields({
+                    name: '💡 Astuce',
+                    value: 'Pour plus d\'informations sur les règles et le fonctionnement des mini-jeux, rendez-vous dans le channel **🎮・commandes-jeu** !',
+                    inline: false,
+                });
+            }
             
             await message.reply({ 
                 embeds: [helpEmbed],
