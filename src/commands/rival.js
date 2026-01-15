@@ -180,8 +180,24 @@ module.exports = {
             }
             
             if (args[0] === 'challenge' && message.mentions.users.size > 0) {
-                const targetUser = message.mentions.users.first();
-                const targetMember = message.mentions.members.first() || await message.guild.members.fetch(targetUser.id).catch(() => null);
+                // Filter out bot mentions and the command author
+                const validMentions = message.mentions.users.filter(u => 
+                    !u.bot && u.id !== userId && u.id !== message.client.user.id
+                );
+                
+                if (validMentions.size === 0) {
+                    const errorEmbed = new EmbedBuilder()
+                        .setColor(0xFF0000)
+                        .setTitle('❌ Utilisateur invalide')
+                        .setDescription('Tu dois mentionner un utilisateur valide (pas un bot ni toi-même).')
+                        .setTimestamp();
+                    
+                    return message.reply({ embeds: [errorEmbed] });
+                }
+                
+                const targetUser = validMentions.first();
+                const targetMember = message.mentions.members.filter(m => m.id === targetUser.id).first() 
+                    || await message.guild.members.fetch(targetUser.id).catch(() => null);
                 
                 // Trouver le montant (premier argument numérique après 'challenge')
                 const bet = parseInt(args.find(arg => !isNaN(parseInt(arg)) && parseInt(arg) > 0)) || 0;
