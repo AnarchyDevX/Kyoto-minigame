@@ -3,7 +3,6 @@ module.exports = {
     prefix: '$',
     gamesChannelId: '1461400514263515286', // Channel pour les mini-jeux
     logChannelId: '1458983245138890752', 
-    smashOrPassChannelId: '1456770973088092415',
     punitionsChannelId: '1460802671647784961',
     highRankRoleId: '1456742024689619066',
     muteRoleName: 'Muted',
