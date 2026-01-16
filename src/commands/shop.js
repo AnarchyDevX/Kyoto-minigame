@@ -1,6 +1,6 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const { getUser, addCoins, addKey, addItem, updateUser, calculateLuck } = require('../utils/game');
-const { getDailyShopForUser, RARITIES } = require('../utils/shopRotatif');
+const { getDailyShopForUser, RARITIES, getTimeUntilNextReset } = require('../utils/shopRotatif');
 
 // Fonction pour créer une barre de chance visuelle
 function getLuckBar(luck) {
@@ -44,11 +44,9 @@ module.exports = {
                 );
             
             // Calculer le temps jusqu'au prochain reset
-            const now = new Date();
-            const tomorrowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
-            const timeUntilReset = Math.floor((tomorrowMidnight - now) / 1000);
-            const hours = Math.floor(timeUntilReset / 3600);
-            const minutes = Math.floor((timeUntilReset % 3600) / 60);
+            const timeUntilReset = getTimeUntilNextReset();
+            const hours = Math.floor(timeUntilReset / (1000 * 60 * 60));
+            const minutes = Math.floor((timeUntilReset % (1000 * 60 * 60)) / (1000 * 60));
             
             const luckEmoji = userLuck > 0 ? '🍀' : userLuck < 0 ? '💀' : '⚖️';
             const luckText = userLuck > 0 ? `+${userLuck}` : userLuck < 0 ? `${userLuck}` : '0';
@@ -57,8 +55,8 @@ module.exports = {
             // Embed principal du shop
             const shopEmbed = new EmbedBuilder()
                 .setColor(0xFFD700)
-                .setTitle('🛒 BOUTIQUE QUOTIDIENNE')
-                .setDescription('**Choisis une catégorie pour voir les articles disponibles**\n\n*Le shop se reset automatiquement tous les jours à minuit*')
+                .setTitle('🛒 BOUTIQUE ROTATIVE')
+                .setDescription('**Choisis une catégorie pour voir les articles disponibles**\n\n*Le shop se reset automatiquement toutes les 2 heures*')
                 .addFields(
                     {
                         name: '💰 Tes pièces',
@@ -77,7 +75,7 @@ module.exports = {
                     }
                 )
                 .setFooter({ 
-                    text: 'Utilise les boutons pour naviguer • Shop unique chaque jour',
+                    text: 'Utilise les boutons pour naviguer • Shop unique toutes les 2h',
                     iconURL: message.author.displayAvatarURL()
                 })
                 .setTimestamp();
@@ -210,16 +208,14 @@ module.exports = {
                             const refreshedLuckEmoji = refreshedLuck > 0 ? '🍀' : refreshedLuck < 0 ? '💀' : '⚖️';
                             const refreshedLuckText = refreshedLuck > 0 ? `+${refreshedLuck}` : refreshedLuck < 0 ? `${refreshedLuck}` : '0';
                             
-                            const now = new Date();
-                            const tomorrowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
-                            const timeUntilReset = Math.floor((tomorrowMidnight - now) / 1000);
-                            const hours = Math.floor(timeUntilReset / 3600);
-                            const minutes = Math.floor((timeUntilReset % 3600) / 60);
+                            const timeUntilReset = getTimeUntilNextReset();
+                            const hours = Math.floor(timeUntilReset / (1000 * 60 * 60));
+                            const minutes = Math.floor((timeUntilReset % (1000 * 60 * 60)) / (1000 * 60));
                             
                             const refreshedShopEmbed = new EmbedBuilder()
                                 .setColor(0xFFD700)
-                                .setTitle('🛒 BOUTIQUE QUOTIDIENNE')
-                                .setDescription('**Choisis une catégorie pour voir les articles disponibles**\n\n*Le shop se reset automatiquement tous les jours à minuit*')
+                                .setTitle('🛒 BOUTIQUE ROTATIVE')
+                                .setDescription('**Choisis une catégorie pour voir les articles disponibles**\n\n*Le shop se reset automatiquement toutes les 2 heures*')
                                 .addFields(
                                     {
                                         name: '💰 Tes pièces',
@@ -238,7 +234,7 @@ module.exports = {
                                     }
                                 )
                                 .setFooter({ 
-                                    text: 'Utilise les boutons pour naviguer • Shop unique chaque jour',
+                                    text: 'Utilise les boutons pour naviguer • Shop unique toutes les 2h',
                                     iconURL: message.author.displayAvatarURL()
                                 })
                                 .setTimestamp();
