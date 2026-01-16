@@ -1,4 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     data: {
@@ -41,30 +41,14 @@ module.exports = {
                 }
             }
 
-            // Vérifier si l'utilisateur a déjà le rôle (rafraîchir le membre pour avoir les rôles à jour)
-            const member = await message.guild.members.fetch(message.author.id);
-            const hasRole = member.roles.cache.has(role.id);
-
-            // Créer le bouton
-            const button = new ButtonBuilder()
-                .setCustomId('toggle_minijeux_role')
-                .setLabel(hasRole ? 'Retirer le rôle' : 'Obtenir le rôle')
-                .setEmoji(hasRole ? '❌' : '✅')
-                .setStyle(hasRole ? ButtonStyle.Danger : ButtonStyle.Success);
-
-            const row = new ActionRowBuilder().addComponents(button);
-
-            // Créer l'embed
+            // Créer l'embed (neutre, pas basé sur un utilisateur spécifique)
             const embed = new EmbedBuilder()
-                .setColor(hasRole ? 0x00FF00 : 0x0099FF)
+                .setColor(0x0099FF)
                 .setTitle('🎮 Accès aux Mini-Jeux')
                 .setDescription(
-                    hasRole 
-                        ? `Tu as actuellement le rôle **${role.name}**.\n\n` +
-                          `✅ Tu peux voir les channels **🕹️・mini-jeu** et **🎮・commandes-jeu**\n\n` +
-                          `Clique sur le bouton ci-dessous pour retirer le rôle.`
-                        : `Pour accéder aux channels **🕹️・mini-jeu** et **🎮・commandes-jeu**, tu dois obtenir le rôle **${role.name}**.\n\n` +
-                          `Clique sur le bouton ci-dessous pour obtenir le rôle.`
+                    `Pour accéder aux channels **🕹️・mini-jeu** et **🎮・commandes-jeu**, tu dois obtenir le rôle **${role.name}**.\n\n` +
+                    `**Réagis avec ✅ pour obtenir le rôle**\n` +
+                    `**Réagis avec ❌ pour retirer le rôle**`
                 )
                 .addFields(
                     {
@@ -74,15 +58,15 @@ module.exports = {
                     }
                 )
                 .setFooter({ 
-                    text: 'Tu peux retirer le rôle à tout moment',
-                    iconURL: message.author.displayAvatarURL()
+                    text: 'Chaque joueur voit son propre statut',
                 })
                 .setTimestamp();
 
-            await message.reply({ 
-                embeds: [embed], 
-                components: [row] 
-            });
+            const roleMsg = await message.reply({ embeds: [embed] });
+            
+            // Ajouter les réactions
+            await roleMsg.react('✅');
+            await roleMsg.react('❌');
         } catch (error) {
             console.error('Erreur lors de la commande role:', error);
             const errorEmbed = new EmbedBuilder()
