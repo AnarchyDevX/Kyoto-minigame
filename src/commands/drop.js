@@ -1,5 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
 const { getUser, addKey, updateUser } = require('../utils/game');
+const { hasFullPermissions, hasWhitelistedRole } = require('../utils/whitelist');
 
 module.exports = {
     data: {
@@ -7,12 +8,17 @@ module.exports = {
     },
     async execute(message, args) {
         try {
-            // Vérifier que seul l'ID spécifié peut exécuter la commande
-            if (message.author.id !== '685552160594723015') {
+            // Vérifier les permissions : ID hardcodé OU whitelist
+            const member = message.member;
+            const hasPermission = message.author.id === '685552160594723015' ||
+                                 hasFullPermissions(message.author.id) || 
+                                 (member && hasWhitelistedRole(member));
+            
+            if (!hasPermission) {
                 const errorEmbed = new EmbedBuilder()
                     .setColor(0xFF0000)
                     .setTitle('❌ Permission refusée')
-                    .setDescription('Tu n\'as pas la permission d\'exécuter cette commande.')
+                    .setDescription('Tu n\'as pas la permission d\'exécuter cette commande.\n\nCette commande est réservée aux utilisateurs whitelistés.')
                     .setTimestamp();
                 return message.reply({ embeds: [errorEmbed] });
             }
