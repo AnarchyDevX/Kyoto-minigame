@@ -61,6 +61,7 @@ function saveUsers(users) {
             totalXp: 0,
             dailyStreak: 0,
             lastDailyDate: null,
+            lastDailyTime: 0,
             dailyChallenges: {
                 completed: [],
                 current: null,
@@ -139,6 +140,7 @@ function saveUsers(users) {
                 // Daily/streak system
                 dailyStreak: 0,
                 lastDailyDate: null,
+                lastDailyTime: 0,
                 dailyChallenges: {
                     completed: [],
                     current: null,

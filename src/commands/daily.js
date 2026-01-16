@@ -9,9 +9,45 @@ module.exports = {
             const userId = message.author.id;
             const user = getUser(userId);
             
+            // Vérifier le cooldown de 24h
+            const now = Date.now();
+            const lastDailyTime = user.lastDailyTime || 0;
+            const timeSinceLastDaily = now - lastDailyTime;
+            const cooldownMs = 24 * 60 * 60 * 1000; // 24 heures en millisecondes
+            
+            if (timeSinceLastDaily < cooldownMs && lastDailyTime > 0) {
+                const remainingMs = cooldownMs - timeSinceLastDaily;
+                const remainingHours = Math.floor(remainingMs / (1000 * 60 * 60));
+                const remainingMinutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+                
+                const cooldownEmbed = {
+                    color: 0xFF9900,
+                    title: '⏰ Cooldown actif',
+                    description: `Tu as déjà réclamé ta récompense quotidienne !`,
+                    fields: [
+                        {
+                            name: '⏳ Temps restant',
+                            value: `${remainingHours}h ${remainingMinutes}m`,
+                            inline: true,
+                        },
+                    ],
+                    footer: {
+                        text: 'Reviens dans 24h pour réclamer à nouveau',
+                    },
+                    timestamp: new Date().toISOString(),
+                };
+                
+                return message.reply({ embeds: [cooldownEmbed] });
+            }
+            
             // Update streak and get bonus
             const streakData = updateDailyStreak(userId);
             const updatedUser = getUser(userId);
+            
+            // Enregistrer le timestamp de la réclamation
+            updatedUser.lastDailyTime = now;
+            const { updateUser } = require('../utils/game');
+            updateUser(userId, updatedUser);
             
             // Generate or get daily challenge
             const challenge = generateDailyChallenge(userId);
