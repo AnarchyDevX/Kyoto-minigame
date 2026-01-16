@@ -49,7 +49,8 @@ module.exports = {
                     }
                 }
 
-                const member = interaction.member;
+                // Récupérer le membre avec les rôles à jour
+                const member = await interaction.guild.members.fetch(interaction.user.id);
                 const hasRole = member.roles.cache.has(role.id);
 
                 if (hasRole) {
@@ -74,8 +75,9 @@ module.exports = {
                     await interaction.reply({ embeds: [successEmbed], ephemeral: true });
                 }
 
-                // Mettre à jour le message original avec le nouveau statut
-                const newHasRole = !hasRole;
+                // Rafraîchir le membre pour avoir le statut à jour
+                const updatedMember = await interaction.guild.members.fetch(interaction.user.id);
+                const newHasRole = updatedMember.roles.cache.has(role.id);
                 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
                 
                 const button = new ButtonBuilder()

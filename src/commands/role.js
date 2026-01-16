@@ -41,8 +41,8 @@ module.exports = {
                 }
             }
 
-            // Vérifier si l'utilisateur a déjà le rôle
-            const member = message.member;
+            // Vérifier si l'utilisateur a déjà le rôle (rafraîchir le membre pour avoir les rôles à jour)
+            const member = await message.guild.members.fetch(message.author.id);
             const hasRole = member.roles.cache.has(role.id);
 
             // Créer le bouton
