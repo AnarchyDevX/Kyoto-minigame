@@ -16,7 +16,17 @@ module.exports = {
             }
         }
 
-        const message = reaction.message;
+        let message = reaction.message;
+        
+        // Récupérer le message complet si c'est une réaction partielle
+        if (message.partial) {
+            try {
+                await message.fetch();
+            } catch (error) {
+                console.error('Erreur lors de la récupération du message:', error);
+                return;
+            }
+        }
         
         // Vérifier que c'est un message du bot
         if (!message.author || !message.author.bot) return;
@@ -25,7 +35,7 @@ module.exports = {
         if (!message.embeds || message.embeds.length === 0) return;
         
         const embed = message.embeds[0];
-        if (!embed.title || !embed.title.includes('🎮 Accès aux Mini-Jeux')) return;
+        if (!embed || !embed.title || !embed.title.includes('🎮 Accès aux Mini-Jeux')) return;
 
         // Vérifier que c'est une réaction ✅ ou ❌
         if (reaction.emoji.name !== '✅' && reaction.emoji.name !== '❌') return;
@@ -104,7 +114,11 @@ module.exports = {
             }
 
             // Retirer la réaction pour que l'utilisateur puisse réagir à nouveau
-            await reaction.users.remove(user.id).catch(() => {});
+            try {
+                await reaction.users.remove(user.id);
+            } catch (error) {
+                console.error('Erreur lors de la suppression de la réaction:', error);
+            }
         } catch (error) {
             console.error('Erreur lors de la gestion de la réaction:', error);
         }
