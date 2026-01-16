@@ -1,4 +1,4 @@
-const { shouldResetShop, forceResetShop } = require('../utils/shopRotatif');
+const { shouldResetShop, forceResetShop, getTimeUntilNextReset } = require('../utils/shopRotatif');
 
 module.exports = {
     name: 'ready',
@@ -19,12 +19,12 @@ module.exports = {
             status: 'online'
         });
         
-        // Setup daily shop reset at midnight
-        setupDailyShopReset();
+        // Setup shop reset toutes les 2h
+        setupShopReset();
     },
 };
 
-function setupDailyShopReset() {
+function setupShopReset() {
     // Vérifier immédiatement si un reset est nécessaire
     if (shouldResetShop()) {
         console.log('🔄 Reset initial du shop rotatif...');
@@ -34,27 +34,26 @@ function setupDailyShopReset() {
     // Vérifier toutes les minutes si on doit reset
     setInterval(() => {
         if (shouldResetShop()) {
-            console.log('🔄 Reset quotidien du shop rotatif à minuit');
+            console.log('🔄 Reset du shop rotatif (toutes les 2h)');
             forceResetShop();
         }
     }, 60 * 1000); // Vérifier toutes les minutes
     
-    // Calculer le temps jusqu'à minuit pour le prochain reset
-    const now = new Date();
-    const tomorrowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
-    const msUntilMidnight = tomorrowMidnight - now;
+    // Calculer le temps jusqu'au prochain reset (2h)
+    const msUntilNextReset = getTimeUntilNextReset();
     
-    // Programmer le reset exact à minuit
+    // Programmer le reset exact dans 2h
     setTimeout(() => {
-        console.log('🔄 Reset quotidien du shop rotatif à minuit');
+        console.log('🔄 Reset du shop rotatif (toutes les 2h)');
         forceResetShop();
         
-        // Programmer le reset suivant (24h après)
+        // Programmer les resets suivants (toutes les 2h)
         setInterval(() => {
-            console.log('🔄 Reset quotidien du shop rotatif à minuit');
+            console.log('🔄 Reset du shop rotatif (toutes les 2h)');
             forceResetShop();
-        }, 24 * 60 * 60 * 1000); // Toutes les 24h
-    }, msUntilMidnight);
+        }, 2 * 60 * 60 * 1000); // Toutes les 2h
+    }, msUntilNextReset);
     
-    console.log(`⏰ Shop rotatif configuré - Prochain reset dans ${Math.floor(msUntilMidnight / 1000 / 60)} minutes`);
+    const minutesUntilReset = Math.floor(msUntilNextReset / 1000 / 60);
+    console.log(`⏰ Shop rotatif configuré - Prochain reset dans ${minutesUntilReset} minutes`);
 }

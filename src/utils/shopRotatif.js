@@ -83,13 +83,21 @@ function saveShopData(shopData) {
     }
 }
 
-// Obtenir la date de minuit aujourd'hui
-function getTodayMidnight() {
+// Obtenir la date du dernier reset (arrondi à l'heure paire)
+function getLastResetTime() {
     const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const currentHour = now.getHours();
+    const resetHour = Math.floor(currentHour / 2) * 2; // Arrondir à l'heure paire (0, 2, 4, 6, etc.)
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), resetHour, 0, 0, 0);
 }
 
-// Vérifier si le shop doit être reset
+// Obtenir la date du prochain reset (2h après le dernier)
+function getNextResetTime() {
+    const lastReset = getLastResetTime();
+    return new Date(lastReset.getTime() + 2 * 60 * 60 * 1000); // +2 heures
+}
+
+// Vérifier si le shop doit être reset (toutes les 2h)
 function shouldResetShop() {
     const shopData = loadShopData();
     if (!shopData || !shopData.lastReset) {
@@ -97,9 +105,11 @@ function shouldResetShop() {
     }
     
     const lastReset = new Date(shopData.lastReset);
-    const todayMidnight = getTodayMidnight();
+    const now = new Date();
+    const timeSinceLastReset = now - lastReset;
     
-    return lastReset < todayMidnight;
+    // Reset si 2 heures ou plus se sont écoulées
+    return timeSinceLastReset >= 2 * 60 * 60 * 1000;
 }
 
 // Calculer le multiplicateur de prix basé sur la luck
@@ -168,7 +178,7 @@ function generateRandomItem(category, userLuck = 0) {
     return weightedPool[weightedPool.length - 1];
 }
 
-// Générer le shop du jour (sans luck, généré une fois pour tous)
+// Générer le shop (sans luck, généré une fois pour tous)
 function generateDailyShop() {
     const shopItems = {
         cles: {
@@ -181,11 +191,20 @@ function generateDailyShop() {
         },
     };
     
-    // Générer 3-5 clés par jour
+    // Sets pour éviter les duplications
+    const usedKeys = new Set();
+    const usedItems = new Set();
+    
+    // Générer 3-5 clés sans duplication
     const numKeys = 3 + Math.floor(Math.random() * 3);
-    for (let i = 0; i < numKeys; i++) {
+    let attempts = 0;
+    const maxAttempts = 50; // Limite de tentatives pour éviter boucle infinie
+    
+    while (shopItems.cles.items.length < numKeys && attempts < maxAttempts) {
+        attempts++;
         const item = generateRandomItem('cles', 0); // Génération neutre
-        if (item) {
+        if (item && !usedKeys.has(item.name)) {
+            usedKeys.add(item.name);
             const rarity = RARITIES[item.rarity];
             const basePrice = Math.floor(item.basePrice * rarity.priceMultiplier);
             
@@ -198,11 +217,15 @@ function generateDailyShop() {
         }
     }
     
-    // Générer 4-6 objets par jour
+    // Générer 4-6 objets sans duplication
     const numItems = 4 + Math.floor(Math.random() * 3);
-    for (let i = 0; i < numItems; i++) {
+    attempts = 0;
+    
+    while (shopItems.objets.items.length < numItems && attempts < maxAttempts) {
+        attempts++;
         const item = generateRandomItem('objets', 0); // Génération neutre
-        if (item) {
+        if (item && !usedItems.has(item.name)) {
+            usedItems.add(item.name);
             const rarity = RARITIES[item.rarity];
             const basePrice = Math.floor(item.basePrice * rarity.priceMultiplier);
             
@@ -241,17 +264,17 @@ function applyLuckToShop(shopItems, userLuck) {
     return adjustedShop;
 }
 
-// Obtenir ou générer le shop du jour (sans luck)
+// Obtenir ou générer le shop (sans luck)
 function getDailyShop() {
     const shopData = loadShopData();
     
     if (shouldResetShop()) {
         // Générer nouveau shop
         const newShop = generateDailyShop();
-        const todayMidnight = getTodayMidnight();
+        const now = new Date();
         
         saveShopData({
-            lastReset: todayMidnight.toISOString(),
+            lastReset: now.toISOString(),
             shop: newShop,
         });
         
@@ -280,14 +303,28 @@ function getCurrentShop() {
 // Forcer le reset du shop (pour tests ou admin)
 function forceResetShop() {
     const newShop = generateDailyShop();
-    const todayMidnight = getTodayMidnight();
+    const now = new Date();
     
     saveShopData({
-        lastReset: todayMidnight.toISOString(),
+        lastReset: now.toISOString(),
         shop: newShop,
     });
     
     return newShop;
+}
+
+// Obtenir le temps jusqu'au prochain reset
+function getTimeUntilNextReset() {
+    const shopData = loadShopData();
+    if (!shopData || !shopData.lastReset) {
+        return 0;
+    }
+    
+    const lastReset = new Date(shopData.lastReset);
+    const nextReset = new Date(lastReset.getTime() + 2 * 60 * 60 * 1000);
+    const now = new Date();
+    
+    return Math.max(0, nextReset - now);
 }
 
 module.exports = {
@@ -296,6 +333,7 @@ module.exports = {
     getCurrentShop,
     forceResetShop,
     shouldResetShop,
+    getTimeUntilNextReset,
     RARITIES,
     calculatePriceMultiplier,
     applyLuckToShop,
