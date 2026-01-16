@@ -47,11 +47,11 @@ const ITEM_POOL = {
         { name: 'Lame Émoussée', type: 'item', itemType: 'lame', basePrice: 300, emoji: '⚔️', effect: { damageBoost: 5 }, rarity: 'commun' },
         { name: 'Cuirasse Usée', type: 'item', itemType: 'cuirasse', basePrice: 300, emoji: '🛡️', effect: { defenseBoost: 5 }, rarity: 'commun' },
         { name: 'Amulette du Combattant', type: 'item', itemType: 'amulette', basePrice: 800, emoji: '🔮', effect: { damageBoost: 10 }, rarity: 'rare' },
-        { name: 'Armure Légère', type: 'item', itemType: 'armure', basePrice: 800, emoji: '🛡️', effect: { defenseBoost: 8 }, rarity: 'rare' },
+        { name: 'Armure Légère', type: 'item', itemType: 'armure', basePrice: 800, emoji: '🛡️', effect: { defenseBoost: 10 }, rarity: 'rare' },
         { name: 'Gantelets Sanglants', type: 'item', itemType: 'gantelets', basePrice: 2000, emoji: '⚔️', effect: { damageBoost: 20 }, rarity: 'epique' },
-        { name: 'Bouclier de Fer', type: 'item', itemType: 'bouclier', basePrice: 2000, emoji: '🛡️', effect: { defenseBoost: 15 }, rarity: 'epique' },
+        { name: 'Bouclier de Fer', type: 'item', itemType: 'bouclier', basePrice: 2000, emoji: '🛡️', effect: { defenseBoost: 20 }, rarity: 'epique' },
         { name: 'Épée de la Destinée', type: 'item', itemType: 'lame', basePrice: 5000, emoji: '⚔️', effect: { damageBoost: 35 }, rarity: 'legendaire' },
-        { name: 'Armure Divine', type: 'item', itemType: 'armure', basePrice: 5000, emoji: '🛡️', effect: { defenseBoost: 30 }, rarity: 'legendaire' },
+        { name: 'Armure Divine', type: 'item', itemType: 'armure', basePrice: 5000, emoji: '🛡️', effect: { defenseBoost: 35 }, rarity: 'legendaire' },
     ],
 };
 
