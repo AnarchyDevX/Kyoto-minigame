@@ -53,7 +53,7 @@ module.exports = {
                 .addFields(
                     {
                         name: '📋 Ce que tu obtiens',
-                        value: '• Accès au channel **🕹️・mini-jeu**\n• Accès au channel **🎮・commandes-jeu**\n• Possibilité de jouer aux mini-jeux',
+                        value: '• Accès a tout les channels de mini-jeux',
                         inline: false,
                     }
                 )
